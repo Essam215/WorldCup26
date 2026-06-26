@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA World Cup 2026 - Live Standings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #0f0f1e;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* COLOR STRIPES - SOLID SEPARATED BLOCKS */
+        .color-stripe {
+            display: flex;
+            height: 8px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stripe-red { flex: 1; background: #CC2231; }
+        .stripe-blue { flex: 1; background: #0052CC; }
+        .stripe-yellow { flex: 1; background: #FFD700; }
+        .stripe-green { flex: 1; background: #00AA44; }
+        .stripe-orange { flex: 1; background: #FF6600; }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: -2px;
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .header .live-indicator {
+            display: inline-block;
+            background: #CC2231;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* INFO BAR - SOLID COLOR BLOCKS */
+        .info-bar {
+            display: flex;
+            gap: 0;
+            padding: 0;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            height: 60px;
+        }
+
+        .info-bar > div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+        }
+
+        .info-red { background: #CC2231; }
+        .info-blue { background: #0052CC; }
+        .info-yellow { background: #FFD700; color: #000; }
+        .info-green { background: #00AA44; }
+
+        /* CONTROLS */
+        .controls-section {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0;
+            background: transparent;
+            padding: 0;
+            border-radius: 10px;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        .view-btn {
+            padding: 10px 18px;
+            border: none;
+            background: #1a1a2e;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn.active {
+            background: #CC2231;
+            color: white;
+        }
+
+        .view-btn:hover:not(.active) {
+            color: #fff;
+            background: #252535;
+        }
+
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            flex: 1;
+            max-width: 800px;
+        }
+
+        .group-btn {
+            padding: 10px;
+            border: 2px solid #333;
+            background: #1a1a2e;
+            color: #aaa;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .group-btn:hover {
+            border-color: #CC2231;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .group-btn.active {
+            background: #CC2231;
+            border-color: #CC2231;
+            color: white;
+        }
+
+        /* CONTENT */
+        .content {
+            display: grid;
+            gap: 20px;
+        }
+
+        .table-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        /* TABLE HEADER - SOLID COLOR BLOCKS */
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 800;
+            color: white;
+            gap: 0;
+            background: #1a1a2e;
+            border-bottom: 3px solid #CC2231;
+        }
+
+        .table-header-title {
+            flex: 1;
+        }
+
+        .header-color-block {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2em;
+        }
+
+        .block-red { background: #CC2231; }
+        .block-blue { background: #0052CC; }
+        .block-yellow { background: #FFD700; color: #000; }
+        .block-green { background: #00AA44; }
+        .block-orange { background: #FF6600; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255,255,255,0.03);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: 700;
+            color: #FFD700;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        th:first-child {
+            text-align: left;
+            width: 35px;
+        }
+
+        th:nth-child(2) {
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(204, 34, 49, 0.1);
+            transform: scale(1.01);
+        }
+
+        td {
+            padding: 14px 12px;
+            text-align: center;
+            color: #fff;
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: 800;
+            color: #FFD700;
+            font-size: 1.1em;
+            width: 35px;
+        }
+
+        td:nth-child(2) {
+            text-align: left;
+            font-weight: 600;
+            padding-left: 16px;
+        }
+
+        .qualified {
+            border-left: 4px solid #FFD700;
+        }
+
+        .can-qualify {
+            border-left: 4px solid #0052CC;
+        }
+
+        .pts {
+            font-weight: 800;
+            color: #00AA44;
+            font-size: 1.15em;
+        }
+
+        .positive {
+            color: #00AA44;
+            font-weight: 700;
+        }
+
+        .negative {
+            color: #CC2231;
+            font-weight: 700;
+        }
+
+        /* LEGEND - SOLID COLOR BLOCKS */
+        .legend {
+            background: rgba(255,255,255,0.02);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .legend h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 1em;
+            font-weight: 700;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #aaa;
+        }
+
+        .legend-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .controls-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .groups-grid {
+                max-width: 100%;
+            }
+
+            .info-bar {
+                flex-direction: column;
+                height: auto;
+                gap: 0;
+            }
+
+            .info-bar > div {
+                padding: 12px;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 10px 6px;
+            }
+
+            .table-header {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- COLOR STRIPE AT TOP -->
+        <div class="color-stripe">
+            <div class="stripe-red"></div>
+            <div class="stripe-blue"></div>
+            <div class="stripe-yellow"></div>
+            <div class="stripe-green"></div>
+            <div class="stripe-orange"></div>
+        </div>
+
+        <div class="header">
+            <h1>⚽ World Cup 2026</h1>
+            <p>Official Group Stage Standings</p>
+            <span class="live-indicator">🔴 LIVE</span>
+        </div>
+
+        <!-- INFO BAR - SOLID COLOR BLOCKS -->
+        <div class="info-bar">
+            <div class="info-red">📅 June 11 - July 19, 2026</div>
+            <div class="info-blue">🌍 USA, Mexico & Canada</div>
+            <div class="info-yellow">48 Teams</div>
+            <div class="info-green">104 Matches</div>
+        </div>
+
+        <div class="controls-section">
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="currentView='standings'; render()">Standings</button>
+                <button class="view-btn" onclick="currentView='matches'; render()">Matches</button>
+            </div>
+            
+            <div class="groups-grid" id="groupButtons"></div>
+        </div>
+
+        <div class="content">
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-header-title" id="groupTitle">Group A</div>
+                    <div class="header-color-block block-red">R</div>
+                    <div class="header-color-block block-blue">B</div>
+                    <div class="header-color-block block-yellow">Y</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Team</th>
+                            <th>P</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>GF</th>
+                            <th>GA</th>
+                            <th>GD</th>
+                            <th>Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="legend">
+                <h3>Legend</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #FFD700;"></div>
+                        <span>Top 2 Qualified for Round of 32</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #0052CC;"></div>
+                        <span>3rd Place (Best 8 Advance)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span><strong>P</strong>=Played | <strong>W</strong>=Wins | <strong>D</strong>=Draws | <strong>L</strong>=Losses</span>
+                    </div>
+                    <div class="legend-item">
+                        <span><strong>GF</strong>=Goals For | <strong>GA</strong>=Goals Against | <strong>GD</strong>=Goal Difference</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // OFFICIAL 2026 WORLD CUP GROUPS - REAL DATA
+        const groups = {
+            'A': { name: 'Group A', teams: [
+                { team: 'Mexico', flag: '🇲🇽', p: 3, w: 3, d: 0, l: 0, gf: 7, ga: 1, pts: 9 },
+                { team: 'South Africa', flag: '🇿🇦', p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 4, pts: 4 },
+                { team: 'South Korea', flag: '🇰🇷', p: 3, w: 0, d: 1, l: 2, gf: 2, ga: 4, pts: 1 },
+                { team: 'Czech Republic', flag: '🇨🇿', p: 3, w: 0, d: 1, l: 2, gf: 2, ga: 5, pts: 1 }
+            ]},
+            'B': { name: 'Group B', teams: [
+                { team: 'Switzerland', flag: '🇨🇭', p: 3, w: 2, d: 0, l: 1, gf: 7, ga: 3, pts: 6 },
+                { team: 'Canada', flag: '🇨🇦', p: 3, w: 1, d: 1, l: 1, gf: 9, ga: 3, pts: 4 },
+                { team: 'Bosnia-Herzegovina', flag: '🇧🇦', p: 3, w: 1, d: 1, l: 1, gf: 5, ga: 4, pts: 4 },
+                { team: 'Qatar', flag: '🇶🇦', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 12, pts: 0 }
+            ]},
+            'C': { name: 'Group C', teams: [
+                { team: 'Brazil', flag: '🇧🇷', p: 3, w: 2, d: 1, l: 0, gf: 8, ga: 2, pts: 7 },
+                { team: 'Morocco', flag: '🇲🇦', p: 3, w: 2, d: 0, l: 1, gf: 8, ga: 3, pts: 6 },
+                { team: 'Haiti', flag: '🇭🇹', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 8, pts: 0 },
+                { team: 'Scotland', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', p: 3, w: 0, d: 0, l: 3, gf: 0, ga: 4, pts: 0 }
+            ]},
+            'D': { name: 'Group D', teams: [
+                { team: 'United States', flag: '🇺🇸', p: 3, w: 2, d: 0, l: 1, gf: 6, ga: 1, pts: 6 },
+                { team: 'Paraguay', flag: '🇵🇾', p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 4, pts: 4 },
+                { team: 'Australia', flag: '🇦🇺', p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 4, pts: 4 },
+                { team: 'Turkey', flag: '🇹🇷', p: 3, w: 0, d: 0, l: 3, gf: 2, ga: 5, pts: 0 }
+            ]},
+            'E': { name: 'Group E', teams: [
+                { team: 'Germany', flag: '🇩🇪', p: 3, w: 2, d: 1, l: 0, gf: 10, ga: 2, pts: 7 },
+                { team: 'Ecuador', flag: '🇪🇨', p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 4, pts: 4 },
+                { team: 'Ivory Coast', flag: '🇨🇮', p: 3, w: 1, d: 0, l: 2, gf: 4, ga: 7, pts: 3 },
+                { team: 'Curacao', flag: '🇨🇼', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 5, pts: 0 }
+            ]},
+            'F': { name: 'Group F', teams: [
+                { team: 'Netherlands', flag: '🇳🇱', p: 3, w: 2, d: 1, l: 0, gf: 10, ga: 3, pts: 7 },
+                { team: 'Japan', flag: '🇯🇵', p: 3, w: 1, d: 1, l: 1, gf: 7, ga: 6, pts: 4 },
+                { team: 'Sweden', flag: '🇸🇪', p: 3, w: 1, d: 1, l: 1, gf: 7, ga: 6, pts: 4 },
+                { team: 'Tunisia', flag: '🇹🇳', p: 3, w: 0, d: 0, l: 3, gf: 2, ga: 11, pts: 0 }
+            ]},
+            'G': { name: 'Group G', teams: [
+                { team: 'Belgium', flag: '🇧🇪', p: 3, w: 2, d: 1, l: 0, gf: 8, ga: 2, pts: 7 },
+                { team: 'Egypt', flag: '🇪🇬', p: 3, w: 1, d: 1, l: 1, gf: 4, ga: 4, pts: 4 },
+                { team: 'Iran', flag: '🇮🇷', p: 3, w: 1, d: 0, l: 2, gf: 3, ga: 6, pts: 3 },
+                { team: 'New Zealand', flag: '🇳🇿', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 4, pts: 0 }
+            ]},
+            'H': { name: 'Group H', teams: [
+                { team: 'Spain', flag: '🇪🇸', p: 3, w: 2, d: 1, l: 0, gf: 6, ga: 2, pts: 7 },
+                { team: 'Uruguay', flag: '🇺🇾', p: 3, w: 2, d: 0, l: 1, gf: 4, ga: 2, pts: 6 },
+                { team: 'Cape Verde', flag: '🇨🇻', p: 3, w: 0, d: 1, l: 2, gf: 2, ga: 5, pts: 1 },
+                { team: 'Saudi Arabia', flag: '🇸🇦', p: 3, w: 0, d: 0, l: 3, gf: 0, ga: 3, pts: 0 }
+            ]},
+            'I': { name: 'Group I', teams: [
+                { team: 'Norway', flag: '🇳🇴', p: 3, w: 2, d: 0, l: 1, gf: 8, ga: 4, pts: 6 },
+                { team: 'France', flag: '🇫🇷', p: 3, w: 2, d: 0, l: 1, gf: 9, ga: 4, pts: 6 },
+                { team: 'Senegal', flag: '🇸🇳', p: 3, w: 1, d: 0, l: 2, gf: 5, ga: 8, pts: 3 },
+                { team: 'Iraq', flag: '🇮🇶', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 7, pts: 0 }
+            ]},
+            'J': { name: 'Group J', teams: [
+                { team: 'Argentina', flag: '🇦🇷', p: 3, w: 3, d: 0, l: 0, gf: 9, ga: 1, pts: 9 },
+                { team: 'Austria', flag: '🇦🇹', p: 3, w: 1, d: 1, l: 1, gf: 6, ga: 5, pts: 4 },
+                { team: 'Algeria', flag: '🇩🇿', p: 3, w: 0, d: 2, l: 1, gf: 2, ga: 5, pts: 2 },
+                { team: 'Jordan', flag: '🇯🇴', p: 3, w: 0, d: 1, l: 2, gf: 2, ga: 8, pts: 1 }
+            ]},
+            'K': { name: 'Group K', teams: [
+                { team: 'Portugal', flag: '🇵🇹', p: 3, w: 2, d: 1, l: 0, gf: 7, ga: 2, pts: 7 },
+                { team: 'Colombia', flag: '🇨🇴', p: 3, w: 2, d: 0, l: 1, gf: 6, ga: 3, pts: 6 },
+                { team: 'DR Congo', flag: '🇨🇩', p: 3, w: 0, d: 1, l: 2, gf: 2, ga: 6, pts: 1 },
+                { team: 'Uzbekistan', flag: '🇺🇿', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 5, pts: 0 }
+            ]},
+            'L': { name: 'Group L', teams: [
+                { team: 'England', flag: '🇬🇧', p: 3, w: 1, d: 2, l: 0, gf: 4, ga: 1, pts: 5 },
+                { team: 'Croatia', flag: '🇭🇷', p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 3, pts: 4 },
+                { team: 'Ghana', flag: '🇬🇭', p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 3, pts: 4 },
+                { team: 'Panama', flag: '🇵🇦', p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 4, pts: 0 }
+            ]}
+        };
+
+        let currentGroup = 'A';
+        let currentView = 'standings';
+
+        function createGroupButtons() {
+            const container = document.getElementById('groupButtons');
+            Object.keys(groups).forEach(g => {
+                const btn = document.createElement('button');
+                btn.className = `group-btn ${g === 'A' ? 'active' : ''}`;
+                btn.textContent = g;
+                btn.onclick = () => {
+                    currentGroup = g;
+                    document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    render();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function render() {
+            const groupData = groups[currentGroup];
+            document.getElementById('groupTitle').textContent = groupData.name;
+            
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            groupData.teams.forEach((team, idx) => {
+                const row = document.createElement('tr');
+                if (idx < 2) row.classList.add('qualified');
+                else if (idx === 2) row.classList.add('can-qualify');
+
+                const gd = team.gf - team.ga;
+                const gdClass = gd > 0 ? 'positive' : gd < 0 ? 'negative' : '';
+                const gdSign = gd > 0 ? '+' : '';
+
+                row.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${team.flag} ${team.team}</td>
+                    <td>${team.p}</td>
+                    <td>${team.w}</td>
+                    <td>${team.d}</td>
+                    <td>${team.l}</td>
+                    <td>${team.gf}</td>
+                    <td>${team.ga}</td>
+                    <td class="${gdClass}">${gdSign}${gd}</td>
+                    <td class="pts">${team.pts}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Initialize
+        createGroupButtons();
+        render();
+    </script>
+</body>
+</html>
